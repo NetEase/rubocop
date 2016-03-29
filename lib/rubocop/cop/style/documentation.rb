@@ -14,6 +14,7 @@ module RuboCop
       # same for all its children.
       class Documentation < Cop
         include AnnotationComment
+        include OnMethodDef
 
         MSG = 'Missing top-level %s documentation comment.'.freeze
 
@@ -38,6 +39,15 @@ module RuboCop
           return if associated_comment?(node, ast_with_comments)
           return if nodoc_comment?(node, ast_with_comments)
           add_offense(node, :keyword, format(MSG, :module))
+        end
+
+        def on_method_def(node, _method_name, _args, body)
+          return if namespace?(body)
+
+          ast_with_comments = processed_source.ast_with_comments
+          return if associated_comment?(node, ast_with_comments)
+          return if nodoc_comment?(node, ast_with_comments)
+          add_offense(node, :keyword, format(MSG, :method))
         end
 
         private
